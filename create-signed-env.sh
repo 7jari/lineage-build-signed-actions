@@ -73,9 +73,14 @@ rm ~/.android-certs/make_key
 rm -rf vendor/lineage-priv
 mkdir -p vendor/lineage-priv
 mv ~/.android-certs vendor/lineage-priv/keys
-echo 'PRODUCT_DEFAULT_DEV_CERTIFICATE := vendor/lineage-priv/keys/releasekey' > vendor/lineage-priv/keys/keys.mk
-echo 'PRODUCT_EXTRA_RECOVERY_KEYS :=' >> vendor/lineage-priv/keys/keys.mk
-echo 'PRODUCT_MAINLINE_BLUETOOTH_SEPOLICY_DEV_CERTIFICATES := $(dir $(PRODUCT_DEFAULT_DEV_CERTIFICATE))' >> vendor/lineage-priv/keys/keys.mk
+
+if [ -f keys.mk ]; then
+  cp keys.mk vendor/lineage-priv/keys/keys.mk
+else
+  echo "ERROR: keys.mk not found next to create-signed-env.sh"
+  exit 1
+fi
+
 cat <<EOF > vendor/lineage-priv/keys/BUILD.bazel
 filegroup(
     name = "android_certificate_directory",
@@ -86,6 +91,27 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 EOF
+
+# Build Android.bp from whatever override certs exist in vendor/lineage-priv/keys
+{
+  echo "// Auto-generated. Do not edit."
+  echo ""
+
+  # Find all "*.override.pk8", strip suffix, unique, sorted
+  while IFS= read -r base; do
+    cat <<EOF
+android_app_certificate {
+    name: "${base}.override",
+    certificate: "${base}.override",
+}
+
+EOF
+  done < <(
+    find vendor/lineage-priv/keys -maxdepth 1 -type f -name "*.override.pk8" -printf "%f\n" \
+      | sed 's/\.override\.pk8$//' \
+      | sort -u
+  )
+} > vendor/lineage-priv/keys/Android.bp
 
 echo ""
 echo "✓ Done! Now build as usual."
