@@ -1,0 +1,102 @@
+name: "Linag Signer"
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo_manifest:
+        description: "Enter repo manifest"
+        required: true
+        type: string
+      repo_branch:
+        description: "Enter repo manifest's branch"
+        required: true
+        type: string
+      country:
+        description: "Enter country code"
+        required: true
+        type: string
+        default: 'US'
+      state:
+        description: "Enter state or province name"
+        required: true
+        type: string
+        default: 'California'
+      locality:
+        description: "Enter locality"
+        required: true
+        type: string
+        default: 'Mountain View'
+      organization:
+        description: "Enter organization name"
+        required: true
+        type: string
+        default: 'crDroid'
+      org_unit:
+        description: "Enter organizational unit"
+        required: true
+        type: string
+        default: 'crDroid'
+      common_name:
+        description: "Enter common name"
+        required: true
+        type: string
+        default: 'crDroid'
+      email:
+        description: "Enter email address"
+        required: true
+        type: string
+        default: 'contact@crdroid.net'
+
+jobs:
+  build:
+    name: "Sign Linag"
+    runs-on: ubuntu-22.04
+    steps:
+        - name: "Checkout"
+          uses: actions/checkout@v6
+
+        - name: "Free disk space"
+          uses: endersonmenezes/free-disk-space@v3  # Use @main for latest, @v3 for stable
+          with:
+            remove_android: true
+            remove_dotnet: true
+            remove_haskell: true
+            remove_tool_cache: true
+            remove_swap: true
+            remove_packages: "azure-cli google-cloud-cli microsoft-edge-stable google-chrome-stable firefox postgresql* temurin-* *llvm* mysql* dotnet-sdk-*"
+            remove_packages_one_command: true
+            remove_folders: "/usr/share/swift /usr/share/miniconda /usr/share/az* /usr/local/lib/node_modules /usr/local/share/chromium /usr/local/share/powershell /usr/local/julia /usr/local/aws-cli /usr/local/aws-sam-cli /usr/share/gradle"
+            rm_cmd: "rmz"  # Use 'rmz' for faster deletion (default: 'rm')
+            rmz_version: "3.1.1"  # Required when rm_cmd is 'rmz'
+            testing: false
+
+        - name: "Set up dependencies"
+          run: |
+            sudo apt update
+            sudo apt upgrade -y
+            DEBIAN_FRONTEND=noninteractive sudo apt install -yq \
+              bc bison build-essential ccache curl flex g++-multilib gcc-multilib git git-lfs gnupg gperf imagemagick protobuf-compiler python3-protobuf lib32readline-dev lib32z1-dev libdw-dev libelf-dev libgnutls28-dev \
+              lz4 libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev lib32ncurses5-dev libncurses5 libncurses5-dev
+
+        - name: "Set up linag repo"
+          run: |
+            mkdir -p ~/bin
+            curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+            chmod a+x ~/bin/repo
+            export PATH="$HOME/bin:$PATH"
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            repo init -u ${{ github.event.inputs.repo_manifest }} -b ${{ github.event.inputs.repo_branch }} --depth=1 --git-lfs --no-clone-bundle
+            repo sync -j8
+
+        - name: "Sign linag!"
+          run: |
+            source build/envsetup.sh
+            country=${{ github.event.inputs.country }} \
+            state=${{ github.event.inputs.state }} \
+            locality=${{ github.event.inputs.locality }} \
+            organization=${{ github.event.inputs.organization }} \
+            organizational_unit=${{ github.event.inputs.org_unit }} \
+            common_name=${{ github.event.inputs.common_name }} \
+            email=${{ github.event.inputs.email }} \
+            ./create-signed-env.sh
