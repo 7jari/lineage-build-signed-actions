@@ -103,13 +103,13 @@ jobs:
 
         - name: Push to GitHub as repository
           run: |
-            cd vendor/lineage-priv
+            cd vendor/lineage-priv/keys
             USERNAME=${{ github.actor }}
             TOKEN=${{ secrets.PAT }}
             git init
             git branch -M ${{ github.event.inputs.repo_branch }}
             git add .
-            git commit -s -m "vendor/lineage-priv: keys: upload"
-            curl -u "$USERNAME:$TOKEN" https://api.github.com/user/repos -d '{"name":"vendor_lineage-priv_'$USERNAME'","private":"true"}' || true
-            git remote add origin https://$USERNAME:$TOKEN@github.com/$USERNAME/vendor_lineage-priv_$USERNAME.git
+            git commit -s -m "lineage-priv: keys: upload"
+            curl -u "$USERNAME:$TOKEN" https://api.github.com/user/repos -d '{"name":"vendor_lineage-priv_keys","private":"true"}' || true
+            git remote add origin https://$USERNAME:$TOKEN@github.com/$USERNAME/vendor_lineage-priv_keys.git
             git push -f origin ${{ github.event.inputs.repo_branch }}
