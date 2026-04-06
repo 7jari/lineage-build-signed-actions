@@ -87,16 +87,16 @@ jobs:
             git config --global user.name "github-actions[bot]"
             git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
             repo init -u ${{ github.event.inputs.repo_manifest }} -b ${{ github.event.inputs.repo_branch }} --depth=1 --git-lfs --no-clone-bundle
-            repo sync -j8
+            repo sync -j12
 
         - name: "Sign linag!"
           run: |
             source build/envsetup.sh
-            country=${{ github.event.inputs.country }} \
-            state=${{ github.event.inputs.state }} \
-            locality=${{ github.event.inputs.locality }} \
-            organization=${{ github.event.inputs.organization }} \
-            organizational_unit=${{ github.event.inputs.org_unit }} \
-            common_name=${{ github.event.inputs.common_name }} \
-            email=${{ github.event.inputs.email }} \
+            country="${{ github.event.inputs.country }}" \
+            state="${{ github.event.inputs.state }}" \
+            locality="${{ github.event.inputs.locality }}" \
+            organization="${{ github.event.inputs.organization }}" \
+            organizational_unit="${{ github.event.inputs.org_unit }}" \
+            common_name="${{ github.event.inputs.common_name }}" \
+            email="${{ github.event.inputs.email }}" \
             ./create-signed-env.sh
