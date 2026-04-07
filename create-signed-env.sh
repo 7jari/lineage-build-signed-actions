@@ -3,10 +3,6 @@
 # Construct the subject line
 subject="/C=${country}/ST=${state}/L=${locality}/O=${organization}/OU=${organizational_unit}/CN=${common_name}/emailAddress=${email}"
 
-# Print the subject line
-echo "Using Subject Line:"
-echo "$subject"
-
 make_key_nopass() {
   local out="$1"
   local size="${2:-2048}"
@@ -82,8 +78,5 @@ EOF
   )
 } > vendor/lineage-priv/keys/Android.bp
 
-echo ""
-echo "✓ Done! Now build as usual."
+echo "✓ Done! Will now push to a private GitHub repository."
 echo "✓ If builds aren't being signed, add '-include vendor/lineage-priv/keys/keys.mk' to your device mk file"
-echo ""
-echo "⚠ IMPORTANT: Make copies of your vendor/lineage-priv folder as it contains your keys!"
