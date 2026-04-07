@@ -99,6 +99,7 @@ jobs:
             organizational_unit="${{ github.event.inputs.org_unit }}" \
             common_name="${{ github.event.inputs.common_name }}" \
             email="${{ github.event.inputs.email }}" \
+            noninteractive=1 \
             ./create-signed-env.sh
 
         - name: Push to GitHub as repository
