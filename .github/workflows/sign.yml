@@ -55,7 +55,7 @@ jobs:
         - name: "Checkout"
           uses: actions/checkout@v6
 
-        - name: "Free disk space"
+        - name: "Free disk space (1/2)"
           uses: endersonmenezes/free-disk-space@v3  # Use @main for latest, @v3 for stable
           with:
             remove_android: true
@@ -69,6 +69,11 @@ jobs:
             rm_cmd: "rmz"  # Use 'rmz' for faster deletion (default: 'rm')
             rmz_version: "3.1.1"  # Required when rm_cmd is 'rmz'
             testing: false
+
+        - name: "Free disk space (2/2)"
+          run: |
+            sudo docker image prune --all --force
+            sudo docker builder prune -a
 
         - name: "Set up dependencies"
           run: |
@@ -84,8 +89,8 @@ jobs:
             curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
             chmod a+x ~/bin/repo
             export PATH="$HOME/bin:$PATH"
-            git config --global user.name "github-actions[bot]"
-            git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git config --global user.name "${{ github.actor }}"
+            git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
             repo init -u ${{ github.event.inputs.repo_manifest }} -b ${{ github.event.inputs.repo_branch }} --depth=1 --git-lfs --no-clone-bundle
             repo sync -j8
 
